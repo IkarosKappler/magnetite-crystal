@@ -13,54 +13,50 @@
     // This function builds the voxels
     function mkCrystal( material, elementAdded ) {
 
-	/*
-	var cube_geometry = new THREE.CubeGeometry( 12*3, 12*3, 12*3 );
-	var cube_mesh = new THREE.Mesh( cube_geometry );
-	cube_mesh.position.x = -7;
-	var cube_bsp = new ThreeBSP( cube_mesh );
-	var sphere_geometry = new THREE.SphereGeometry( 12*1.8, 32, 32 );
-	var sphere_mesh = new THREE.Mesh( sphere_geometry );
-	sphere_mesh.position.x = -7;
-	var sphere_bsp = new ThreeBSP( sphere_mesh );
-	
-	var subtract_bsp = cube_bsp.subtract( sphere_bsp );
-	var result = subtract_bsp.toMesh( new THREE.MeshLambertMaterial({
-	    shading: THREE.SmoothShading
-	    //map: new THREE.TextureLoader().load('texture.png')
-	}));
-	result.geometry.computeVertexNormals();
-	*/
+	var hyp36 = Math.sqrt(36*36 + 36*36);
 
-	var meshCubeA = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36 ) );
-	//meshCubeA.position.x = -7;
-	var bspCubeA = new ThreeBSP( meshCubeA );
+	function applyMeshRotation(mesh,x,y,z) {
+	    mesh.rotation.x = x;
+	    mesh.rotation.y = y;
+	    mesh.rotation.z = z;
+	    mesh.updateMatrix(); 
+	    mesh.geometry.applyMatrix( meshCubeB.matrix );
+	    mesh.matrix.identity();
+	    //meshCubeB.matrixAutoUpdate = false;
+	    mesh.verticesNeedUpdate = true;
+	    // Clear the rotation
+	    mesh.rotation.x = 0;
+	    mesh.rotation.y = 0;
+	    mesh.rotation.z = 0;
+	}
+
+	// var meshBase = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36 ) );
+	var meshBase = new THREE.Mesh( new THREE.OctahedronGeometry(36,0) );
+	var bspBase = new ThreeBSP( meshBase );
+	var meshCubeA = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36), new THREE.MeshPhongMaterial( { color : 0x0088ff, transparent : true, opacity : 0.5 } ) );
 	var meshCubeB = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36), new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
-	//meshCubeB.position.x = -7;
-	//meshCubeB.rotation.x = Math.PI/4;
-	meshCubeB.rotation.y = Math.PI/4;
-	meshCubeB.updateMatrix(); 
-	meshCubeB.geometry.applyMatrix( meshCubeB.matrix );
-	meshCubeB.matrix.identity();
-	//meshCubeB.matrixAutoUpdate = false;
-	//meshCubeB.verticesNeedUpdate = true;
-	meshCubeB.rotation.x = 0;
-	meshCubeB.rotation.y = 0; 
+	applyMeshRotation(meshBase,0,Math.PI/4,0);
+	var bspCubeA = new ThreeBSP( meshCubeA );
 	var bspCubeB = new ThreeBSP( meshCubeB );
 
 	var mesh = new THREE.Mesh();
 	
-	var intersectionA = bspCubeA.intersect( bspCubeB );
+	var intersectionA = bspBase.intersect( bspCubeA );
 	var meshIntersectionA = intersectionA.toMesh( material );
 	meshIntersectionA.geometry.computeVertexNormals();
 
-	var differenceA = bspCubeB.subtract( bspCubeA );
+	var differenceA = bspCubeA.subtract( bspBase );
+	var differenceB = bspBase.subtract( bspCubeA );
 	var meshDifferenceA = differenceA.toMesh( new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
 	meshDifferenceA.geometry.computeVertexNormals();
+	var meshDifferenceB = differenceB.toMesh( new THREE.MeshPhongMaterial( { color : 0x00ff00, transparent : true, opacity : 0.5 } ) );
+	meshDifferenceB.geometry.computeVertexNormals();
 
 	
 	//elementAdded(meshCubeB);
 	mesh.add( meshIntersectionA );
 	mesh.add( meshDifferenceA );
+	mesh.add( meshDifferenceB );
 	
 	return mesh; // result;
     }
