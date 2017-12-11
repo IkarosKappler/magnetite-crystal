@@ -1,6 +1,6 @@
 <html> 
   <head> 
-    <title>Creating a magnetite crystal</title> 
+    <title>Computing a magnetite crystal using CSG</title> 
     <style>
       html, body { padding: 0; margin : 0 }
       canvas { width: 100%; height: 100%; position : absolute; left : 0px; top : 0px; }
@@ -11,9 +11,13 @@
   <body> 
     <script src="lib/three.r88.min.js"></script>
     <script src="lib/OrbitControls.js"></script>
-    <script src="lib/threex.domevents.js"></script>
+    <!-- <script src="lib/threex.domevents.js"></script> -->
     <!-- <script src="lib/Tween.js"></script> -->
     <script src="lib/ThreeCSG.js"></script>
+
+    <link rel="stylesheet" href="lib/dat.gui.css">
+    <script src="lib/dat.gui.min.js"></script>
+    
     
     <script src="js/rAF.polyfill.js"></script>
     <script src="js/getParams.js"></script>

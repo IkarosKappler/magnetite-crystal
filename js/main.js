@@ -7,22 +7,23 @@
  **/
 
 (function() {
-
+    
     var meshes = [];
     
-    // This function builds the voxels
-    function mkCrystal( material, elementAdded ) {
+    // This function builds the crystal
+    function mkCrystal( material, settings ) {
 
-	var hyp36 = Math.sqrt(36*36 + 36*36);
-
+	// +-------------------------------------------------------------------------
+	// | This is a helper function that applies mesh rotations to the
+	// | meshe's vertices.
+	// +-------------------------------------------------
 	function applyMeshRotation(mesh,x,y,z) {
 	    mesh.rotation.x = x;
 	    mesh.rotation.y = y;
 	    mesh.rotation.z = z;
 	    mesh.updateMatrix(); 
-	    mesh.geometry.applyMatrix( meshCubeB.matrix );
+	    mesh.geometry.applyMatrix( mesh.matrix );
 	    mesh.matrix.identity();
-	    //meshCubeB.matrixAutoUpdate = false;
 	    mesh.verticesNeedUpdate = true;
 	    // Clear the rotation
 	    mesh.rotation.x = 0;
@@ -30,39 +31,108 @@
 	    mesh.rotation.z = 0;
 	}
 
-	// var meshBase = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36 ) );
-	var meshBase = new THREE.Mesh( new THREE.OctahedronGeometry(36,0) );
-	var bspBase = new ThreeBSP( meshBase );
-	var meshCubeA = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36), new THREE.MeshPhongMaterial( { color : 0x0088ff, transparent : true, opacity : 0.5 } ) );
-	var meshCubeB = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36), new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
-	applyMeshRotation(meshBase,0,Math.PI/4,0);
-	var bspCubeA = new ThreeBSP( meshCubeA );
-	var bspCubeB = new ThreeBSP( meshCubeB );
+	// +-------------------------------------------------------------------------
+	// | This is a helper function that uses a cube as base.
+	// +-------------------------------------------------
+	function _useCubeBase() {
+	    // var meshBase = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36 ) );
+	    var meshBase = new THREE.Mesh( new THREE.OctahedronGeometry(36,0) );
+	    var bspBase = new ThreeBSP( meshBase );
+	    var meshCubeA = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36), new THREE.MeshPhongMaterial( { color : 0x0088ff, transparent : true, opacity : 0.5 } ) );
+	    var meshCubeB = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36), new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
+	    applyMeshRotation(meshBase,0,Math.PI/4,0);
+	    var bspCubeA = new ThreeBSP( meshCubeA );
+	    var bspCubeB = new ThreeBSP( meshCubeB );
 
-	var mesh = new THREE.Mesh();
-	
-	var intersectionA = bspBase.intersect( bspCubeA );
-	var meshIntersectionA = intersectionA.toMesh( material );
-	meshIntersectionA.geometry.computeVertexNormals();
+	    var mesh = new THREE.Mesh();
+	    
+	    var intersectionA = bspBase.intersect( bspCubeA );
+	    var meshIntersectionA = intersectionA.toMesh( material );
+	    meshIntersectionA.geometry.computeVertexNormals();
 
-	var differenceA = bspCubeA.subtract( bspBase );
-	var differenceB = bspBase.subtract( bspCubeA );
-	var meshDifferenceA = differenceA.toMesh( new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
-	meshDifferenceA.geometry.computeVertexNormals();
-	var meshDifferenceB = differenceB.toMesh( new THREE.MeshPhongMaterial( { color : 0x00ff00, transparent : true, opacity : 0.5 } ) );
-	meshDifferenceB.geometry.computeVertexNormals();
+	    var differenceA = bspCubeA.subtract( bspBase );
+	    var differenceB = bspBase.subtract( bspCubeA );
+	    var meshDifferenceA = differenceA.toMesh( new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
+	    meshDifferenceA.geometry.computeVertexNormals();
+	    var meshDifferenceB = differenceB.toMesh( new THREE.MeshPhongMaterial( { color : 0x0088ff, transparent : true, opacity : 0.5 } ) );
+	    meshDifferenceB.geometry.computeVertexNormals();
+
+	    mesh.add( meshIntersectionA );
+	    mesh.add( meshDifferenceA );
+	    mesh.add( meshDifferenceB );
+	    
+	    return mesh;
+	} // END _useCubeBase
 
 	
-	//elementAdded(meshCubeB);
-	mesh.add( meshIntersectionA );
-	mesh.add( meshDifferenceA );
-	mesh.add( meshDifferenceB );
-	
-	return mesh; // result;
+	// +-------------------------------------------------------------------------
+	// | This is a helper function that uses bricks for intersection.
+	// +-------------------------------------------------
+	function _useBricks() {
+	    var meshBrickA = new THREE.Mesh( new THREE.CubeGeometry(18, 36, 36), new THREE.MeshPhongMaterial( { color : 0x0088ff, transparent : true, opacity : 0.5 } ) );
+	    var meshBrickB = new THREE.Mesh( new THREE.CubeGeometry(36, 18, 36), new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
+	    var meshBrickC = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 18), new THREE.MeshPhongMaterial( { color : 0x00ffff, transparent : true, opacity : 0.5 } ) );
+	    var meshBrickD = new THREE.Mesh( new THREE.CubeGeometry(18, 36, 36), new THREE.MeshPhongMaterial( { color : 0xffff00, transparent : true, opacity : 0.5 } ) );
+	    applyMeshRotation( meshBrickA, Math.PI/4, 0, 0 );
+	    applyMeshRotation( meshBrickB, 0, Math.PI/4, 0 );
+	    applyMeshRotation( meshBrickC, 0, 0, Math.PI/4 );
+	    applyMeshRotation( meshBrickD, Math.PI/4, Math.PI/4, 0 );
+	    var bspBrickA = new ThreeBSP( meshBrickA );
+	    var bspBrickB = new ThreeBSP( meshBrickB );
+	    var bspBrickC = new ThreeBSP( meshBrickC );
+	    var bspBrickD = new ThreeBSP( meshBrickD );
+
+	    var mesh = new THREE.Mesh();
+
+	    function _applyIntersectWithDiff( bspBase, colorBase, bspSub, colorSub, callback ) {
+		var bspIntersection  = bspBase.intersect( bspSub );
+		var bspDiffBase      = bspBase.subtract( bspSub );
+		var bspDiffSub       = bspSub.subtract( bspBase );
+		//var meshIntersection = bspIntersection.toMesh( new THREE.MeshPhongMaterial( { color : colorBase, transparent : true, opacity : 0.5 } ) );
+		var meshDiffBase     = bspDiffBase.toMesh(     new THREE.MeshPhongMaterial( { color : colorBase,  transparent : true, opacity : 0.5 } ) );
+		var meshDiffSub      = bspDiffSub.toMesh(      new THREE.MeshPhongMaterial( { color : colorSub,  transparent : true, opacity : 0.5 } ) );
+
+		callback( meshDiffBase, meshDiffSub );
+
+		return bspIntersection;
+	    }
+
+	    /*
+	    var intersectionA = bspBase.intersect( bspCubeA );
+	    var meshIntersectionA = intersectionA.toMesh( material );
+	    meshIntersectionA.geometry.computeVertexNormals();
+
+	    var differenceA = bspCubeA.subtract( bspBase );
+	    var differenceB = bspBase.subtract( bspCubeA );
+	    var meshDifferenceA = differenceA.toMesh( new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
+	    meshDifferenceA.geometry.computeVertexNormals();
+	    var meshDifferenceB = differenceB.toMesh( new THREE.MeshPhongMaterial( { color : 0x00ff00, transparent : true, opacity : 0.5 } ) );
+	    meshDifferenceB.geometry.computeVertexNormals();
+
+	    mesh.add( meshIntersectionA );
+	    mesh.add( meshDifferenceA );
+	    mesh.add( meshDifferenceB );
+	    */
+
+	    var bspIntersection = null;
+	    bspIntersection = _applyIntersectWithDiff( bspBrickA, 0xff0000, bspBrickB, 0x00ff00, function( difA, difB ) { mesh.add(difA); mesh.add(difB); } ); 
+	    
+	    return mesh;
+	} // END _useCubeBase
+
+	return _useCubeBase(); // _useBricks();
     }
 
     function init() {
         window.removeEventListener('load',init);
+
+	var settings = {
+	    angleAX : 0,
+	    angleAY : 45,
+	    angleAZ : 0,
+
+	    rebuild : function() { performCrystalCSG(); }
+	};
 
         // Create new scene
         this.scene = new THREE.Scene(); 
@@ -154,52 +224,39 @@
         requestAnimationFrame(_self._render);
 
 	
-	// Load a texture and use the loade for asyn creating of the torus
+
+	// +-------------------------------------------------------------------------
+	// | Initialize dat.gui
+	// +-------------------------------------------------
+	var updateCrystal = function() {
+	    console.log( 'update ...' );
+
+	    
+	};
+	var gui = new dat.GUI();
+	gui.add( settings, 'angleAX' ).min(-360).max(360).onChange( updateCrystal ); 
+	gui.add( settings, 'angleAY' ).min(-360).max(360).onChange( updateCrystal );
+	gui.add( settings, 'angleAZ' ).min(-360).max(360).onChange( updateCrystal );
+	gui.add( settings, 'rebuild' );
+
+	
+	// +-------------------------------------------------------------------------
+	// | Perform the actual CSG.
+	// +-------------------------------------------------
+	function performCrystalCSG() {
+	    // Use single color for all voxels or randomize?
+	    var material = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
+	    //var domEvents = new THREEx.DomEvents(this.camera, this.renderer.domElement);
+	    
+	    // Compute the crystal asynchronously
+	    var crystal = mkCrystal( material, settings );
+	    scene.add( crystal );
+	    // Hide overlay
+	    document.getElementById('overlay').style.display = 'none';
+	};
 	// new THREE.TextureLoader().load( 'square-gradient.png',
-	window.setTimeout( 
-	    function () {
-		// Use single color for all voxels or randomize?
-		var material = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
-		var domEvents = new THREEx.DomEvents(this.camera, this.renderer.domElement);
-		
-		// Compute the crystal asynchronously
-		var crystal = mkCrystal( material,
-					 function(mesh) {
-					     scene.add(mesh);
-					     
-					 }
-				       );
-		/*
-    		domEvents.addEventListener(crystal, 'mouseover', function(event) {
-    		    //console.log('you hover on the mesh');
-    		    event.target.scale.set(1.5,1.5,1.5);
-		    
-    		}, false);
-    		domEvents.addEventListener(crystal, 'mouseout', function(event) {
-    		    //console.log('you hover off the mesh');
-    		    event.target.scale.set(1.0,1.0,1.0);
-		    
-		}, false);
-		domEvents.addEventListener(crystal, 'click', function(event) {
-		    //console.log('you hover off the mesh');
-		    // event.target.scale.set(1.0,1.0,1.0);
-		    
-		}, false);
-    		*/
-		scene.add( crystal );
-		// Hide overlay
-		document.getElementById('overlay').style.display = 'none';
-	    },
-	    /*
-	    function ( xhr ) { }, // progress
-	    // Function called when download errors
-	    function ( xhr ) {
-		console.error( 'An error happened when loading the texture' );
-		document.getElementById('overlay').innerHTML = 'An error happened when loading the texture';
-	    }, 
-	    */
-	    100
-	);
+	window.setTimeout( performCrystalCSG, 100 );
+	
     } // END function init
 
     window.addEventListener('load', init );
