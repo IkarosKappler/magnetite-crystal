@@ -18,6 +18,10 @@
 	// | meshe's vertices.
 	// +-------------------------------------------------
 	function applyMeshRotation(mesh,x,y,z) {
+	    if( typeof x.x != "undefined" ) {
+		applyMeshRotation(mesh, x.x, x.y, x.z);
+		return;
+	    }
 	    mesh.rotation.x = x;
 	    mesh.rotation.y = y;
 	    mesh.rotation.z = z;
@@ -69,14 +73,22 @@
 	// | This is a helper function that uses bricks for intersection.
 	// +-------------------------------------------------
 	function _useBricks() {
-	    var meshBrickA = new THREE.Mesh( new THREE.CubeGeometry(18, 36, 36), new THREE.MeshPhongMaterial( { color : 0x0088ff, transparent : true, opacity : 0.5 } ) );
-	    var meshBrickB = new THREE.Mesh( new THREE.CubeGeometry(36, 18, 36), new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
-	    var meshBrickC = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 18), new THREE.MeshPhongMaterial( { color : 0x00ffff, transparent : true, opacity : 0.5 } ) );
-	    var meshBrickD = new THREE.Mesh( new THREE.CubeGeometry(18, 36, 36), new THREE.MeshPhongMaterial( { color : 0xffff00, transparent : true, opacity : 0.5 } ) );
-	    applyMeshRotation( meshBrickA, Math.PI/4, 0, 0 );
-	    applyMeshRotation( meshBrickB, 0, Math.PI/4, 0 );
-	    applyMeshRotation( meshBrickC, 0, 0, Math.PI/4 );
-	    applyMeshRotation( meshBrickD, Math.PI/4, Math.PI/4, 0 );
+	    var DEG_TO_RAD = Math.PI*2;
+	    function makeBrickMesh( brickSettings, color ) {
+		var brick = new THREE.Mesh( new THREE.CubeGeometry(brickSettings.size.x,
+								   brickSettings.size.y,
+								   brickSettings.size.z),
+					    new THREE.MeshPhongMaterial( { color : color, transparent : true, opacity : 0.5 } ) );
+		return brick;
+	    }
+	    var meshBrickA = makeBrickMesh( settings.brickA, 0x0000ff );
+	    var meshBrickB = makeBrickMesh( settings.brickB, 0x0000ff );
+	    var meshBrickC = makeBrickMesh( settings.brickC, 0x0000ff );
+	    var meshBrickD = makeBrickMesh( settings.brickD, 0x0000ff );
+	    applyMeshRotation( meshBrickA, settings.brickA.rotation );
+	    applyMeshRotation( meshBrickB, settings.brickB.rotation );
+	    applyMeshRotation( meshBrickC, settings.brickC.rotation );
+	    applyMeshRotation( meshBrickD, settings.brickD.rotation );
 	    var bspBrickA = new ThreeBSP( meshBrickA );
 	    var bspBrickB = new ThreeBSP( meshBrickB );
 	    var bspBrickC = new ThreeBSP( meshBrickC );
@@ -88,49 +100,37 @@
 		var bspIntersection  = bspBase.intersect( bspSub );
 		var bspDiffBase      = bspBase.subtract( bspSub );
 		var bspDiffSub       = bspSub.subtract( bspBase );
-		//var meshIntersection = bspIntersection.toMesh( new THREE.MeshPhongMaterial( { color : colorBase, transparent : true, opacity : 0.5 } ) );
-		var meshDiffBase     = bspDiffBase.toMesh(     new THREE.MeshPhongMaterial( { color : colorBase,  transparent : true, opacity : 0.5 } ) );
-		var meshDiffSub      = bspDiffSub.toMesh(      new THREE.MeshPhongMaterial( { color : colorSub,  transparent : true, opacity : 0.5 } ) );
-
+		var meshDiffBase     = bspDiffBase.toMesh( new THREE.MeshPhongMaterial( { color : colorBase,  transparent : true, opacity : 0.5 } ) );
+		var meshDiffSub      = bspDiffSub.toMesh( new THREE.MeshPhongMaterial( { color : colorSub,  transparent : true, opacity : 0.5 } ) );
 		callback( meshDiffBase, meshDiffSub );
 
 		return bspIntersection;
 	    }
 
-	    /*
-	    var intersectionA = bspBase.intersect( bspCubeA );
-	    var meshIntersectionA = intersectionA.toMesh( material );
-	    meshIntersectionA.geometry.computeVertexNormals();
-
-	    var differenceA = bspCubeA.subtract( bspBase );
-	    var differenceB = bspBase.subtract( bspCubeA );
-	    var meshDifferenceA = differenceA.toMesh( new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
-	    meshDifferenceA.geometry.computeVertexNormals();
-	    var meshDifferenceB = differenceB.toMesh( new THREE.MeshPhongMaterial( { color : 0x00ff00, transparent : true, opacity : 0.5 } ) );
-	    meshDifferenceB.geometry.computeVertexNormals();
-
-	    mesh.add( meshIntersectionA );
-	    mesh.add( meshDifferenceA );
-	    mesh.add( meshDifferenceB );
-	    */
-
-	    var bspIntersection = null;
-	    bspIntersection = _applyIntersectWithDiff( bspBrickA, 0xff0000, bspBrickB, 0x00ff00, function( difA, difB ) { mesh.add(difA); mesh.add(difB); } ); 
-	    
+	    var bspIntersection = bspBrickA;
+	    bspIntersection = _applyIntersectWithDiff( bspIntersection, 0xff0000, bspBrickB, 0x0088ff,
+						       function( difA, difB ) { if( !settings.showBricks ) return; mesh.add(difA); mesh.add(difB); }
+						     );
+	    bspIntersection = _applyIntersectWithDiff( bspIntersection, 0xff0000, bspBrickC, 0x0088ff,
+						       function( difA, difB ) { if( !settings.showBricks ) return; mesh.add(difA); mesh.add(difB); }
+						     );
+	    mesh.add( bspIntersection.toMesh( new THREE.MeshPhongMaterial( { color : 0x00ff00 } ) ) );
 	    return mesh;
 	} // END _useCubeBase
 
-	return _useCubeBase(); // _useBricks();
-    }
+	return _useBricks();
+    } // END mkCrystal
 
     function init() {
         window.removeEventListener('load',init);
 
 	var settings = {
-	    angleAX : 0,
-	    angleAY : 45,
-	    angleAZ : 0,
-
+	    brickA : { size : { x : 18, y : 36, z : 42 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 120, z : 0 } },
+	    brickB : { size : { x : 36, y : 18, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : -120, z : 0 } },
+	    brickC : { size : { x : 36, y : 36, z : 18 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 120, y : 0, z : 0 } },
+	    brickD : { size : { x : 18, y : 36, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : -120, y : 0, z : 0 } },
+	    showBricks : true,
+	    autoRotate : true,
 	    rebuild : function() { performCrystalCSG(); }
 	};
 
@@ -199,7 +199,7 @@
         this.orbitControls.enableDamping = true;
         this.orbitControls.dampingFactor = 1.0;
         this.orbitControls.enableZoom    = true;
-        this.orbitControls.target.copy( new THREE.Vector3(0,0,0) ); // cube.position );  
+        this.orbitControls.target.copy( new THREE.Vector3(0,0,0) );
 
 
 
@@ -211,9 +211,11 @@
             requestAnimationFrame(_self._render); 
             
             // Let's animate the elements: a rotation.
-	    for( i in meshes ) {
-		meshes[i].rotation.x += 0.05; 
-		meshes[i].rotation.y += 0.04;
+	    if( settings.autoRotate ) {
+		for( i in meshes ) {
+		    meshes[i].rotation.x += 0.02; 
+		    meshes[i].rotation.y += 0.01;
+		}
 	    }
 
             _self.renderer.render(_self.scene, _self.camera); 
@@ -234,23 +236,58 @@
 	    
 	};
 	var gui = new dat.GUI();
-	gui.add( settings, 'angleAX' ).min(-360).max(360).onChange( updateCrystal ); 
-	gui.add( settings, 'angleAY' ).min(-360).max(360).onChange( updateCrystal );
-	gui.add( settings, 'angleAZ' ).min(-360).max(360).onChange( updateCrystal );
+	function addBrickFolder(brick,name) {
+	    var folder = gui.addFolder(name);
+	    function addSubFolder( triple, name, min, max ) {
+		var subfolder = folder.addFolder(name);
+		subfolder.add( triple, 'x' ).min(min).max(max).onChange( updateCrystal );
+		subfolder.add( triple, 'y' ).min(min).max(max).onChange( updateCrystal );
+		subfolder.add( triple, 'z' ).min(min).max(max).onChange( updateCrystal );
+	    }
+	    addSubFolder( brick.size, 'Size' );
+	    addSubFolder( brick.translation, 'Translation' );
+	    addSubFolder( brick.rotation, 'Rotation' );
+	}
+	addBrickFolder(settings.brickA,'Brick A');
+	addBrickFolder(settings.brickB,'Brick B');
+	addBrickFolder(settings.brickC,'Brick C');
+	addBrickFolder(settings.brickD,'Brick D');
+
+	gui.add( settings, 'showBricks' ).onChange( performCrystalCSG );
+	gui.add( settings, 'autoRotate' );
 	gui.add( settings, 'rebuild' );
+
+
+	// +-------------------------------------------------------------------------
+	// | Clear all meshes from the scene (keep camera, lights, grid, axes helper, ...)
+	// +-------------------------------------------------
+	function removeMeshes() {
+	    var rotation = null;
+	    if( meshes.length == 0 ) rotation = { x : 0, y : 0, z : 0 };
+	    else                     rotation = meshes[0].rotation.clone();
+	    for( i in meshes ) {
+		scene.remove( meshes[i] );
+	    }
+	    meshes = [];
+	    return rotation;
+	}
 
 	
 	// +-------------------------------------------------------------------------
 	// | Perform the actual CSG.
 	// +-------------------------------------------------
 	function performCrystalCSG() {
+	    var currentRotation = removeMeshes();
+	    console.log( 'currentRotation=' + currentRotation );
 	    // Use single color for all voxels or randomize?
 	    var material = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
 	    //var domEvents = new THREEx.DomEvents(this.camera, this.renderer.domElement);
 	    
 	    // Compute the crystal asynchronously
 	    var crystal = mkCrystal( material, settings );
+	    crystal.rotation.set( currentRotation.x, currentRotation.y, currentRotation.z );
 	    scene.add( crystal );
+	    meshes.push( crystal );
 	    // Hide overlay
 	    document.getElementById('overlay').style.display = 'none';
 	};
