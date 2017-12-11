@@ -3,6 +3,8 @@
 This is a small magnetite crystal construction simulation (using CSG/constructive solid geometry).
 
 
+The first four images show failures :)
+
 ![Magnetite Crystal Initital CSG Test](magnetite-crystal-initial-csg-test.png)
 
 ![Magnetite Crystal Initital CSG Test](magnetite-crystal-initial-csg-test-2.png)
