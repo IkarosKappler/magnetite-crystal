@@ -1,0 +1,23 @@
+
+
+// +-------------------------------------------------------------------------
+// | This is a helper function that applies mesh rotations to the
+// | meshe's vertices.
+// +-------------------------------------------------
+function applyMeshRotation(mesh,x,y,z) {
+    if( typeof x.x != "undefined" ) {
+	applyMeshRotation(mesh, x.x, x.y, x.z);
+	return;
+    }
+    mesh.rotation.x = x;
+    mesh.rotation.y = y;
+    mesh.rotation.z = z;
+    mesh.updateMatrix(); 
+    mesh.geometry.applyMatrix( mesh.matrix );
+    mesh.matrix.identity();
+    mesh.verticesNeedUpdate = true;
+    // Clear the rotation
+    mesh.rotation.x = 0;
+    mesh.rotation.y = 0;
+    mesh.rotation.z = 0;
+}

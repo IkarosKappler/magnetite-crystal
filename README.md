@@ -17,6 +17,10 @@ The first four images show failures :)
 
 ![Magnetite Crystal Plain Crystal](magnetite-crystal-a-plain.png)
 
+![Magnetite Crystal Plain Crystal Twin](magnetite-crystal-d-twins-plain.png)
+
+![Magnetite Crystal Bricked Crystal Twin](magnetite-crystal-d-twins-bricked-2.png)
+
 
 
 Many thanks to Kathie L. Thomas-Keprta for the magnetite crystal habit analysis:

@@ -14,32 +14,9 @@
     function mkCrystal( material, settings ) {
 
 	// +-------------------------------------------------------------------------
-	// | This is a helper function that applies mesh rotations to the
-	// | meshe's vertices.
-	// +-------------------------------------------------
-	function applyMeshRotation(mesh,x,y,z) {
-	    if( typeof x.x != "undefined" ) {
-		applyMeshRotation(mesh, x.x, x.y, x.z);
-		return;
-	    }
-	    mesh.rotation.x = x;
-	    mesh.rotation.y = y;
-	    mesh.rotation.z = z;
-	    mesh.updateMatrix(); 
-	    mesh.geometry.applyMatrix( mesh.matrix );
-	    mesh.matrix.identity();
-	    mesh.verticesNeedUpdate = true;
-	    // Clear the rotation
-	    mesh.rotation.x = 0;
-	    mesh.rotation.y = 0;
-	    mesh.rotation.z = 0;
-	}
-
-	// +-------------------------------------------------------------------------
 	// | This is a helper function that uses a cube as base.
 	// +-------------------------------------------------
 	function _useCubeBase() {
-	    // var meshBase = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36 ) );
 	    var meshBase = new THREE.Mesh( new THREE.OctahedronGeometry(36,0) );
 	    var bspBase = new ThreeBSP( meshBase );
 	    var meshCubeA = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36), new THREE.MeshPhongMaterial( { color : 0x0088ff, transparent : true, opacity : 0.5 } ) );
@@ -121,6 +98,12 @@
 	return _useBricks();
     } // END mkCrystal
 
+
+
+    // +-------------------------------------------------------------------------
+    // | This is the init function.
+    // | It is called upon window.load.
+    // +-------------------------------------------------
     function init() {
         window.removeEventListener('load',init);
 
@@ -129,7 +112,8 @@
 	    brickB : { size : { x : 36, y : 18, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : -120, z : 0 } },
 	    brickC : { size : { x : 36, y : 36, z : 18 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 120, y : 0, z : 0 } },
 	    brickD : { size : { x : 18, y : 36, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : -120, y : 0, z : 0 } },
-	    showBricks : true,
+	    showBricks : false,
+	    makeTwin : true,
 	    autoRotate : true,
 	    rebuild : function() { performCrystalCSG(); }
 	};
@@ -154,7 +138,7 @@
         // Create a geometry conaining the logical 3D information (here: a cube)
         var geometry = new THREE.CubeGeometry(12,12,12); 
 
-        // Pick a material, something like MeshBasicMaterial, PhongMaterial, 
+        // Pick a material, something like MeshBasicMaterial, PhongMaterial, ...
         var material = new THREE.MeshPhongMaterial({color: 0x00ff00}); 
         
         // Create the cube from the geometry and the material ...
@@ -206,7 +190,7 @@
         // This is the basic render function. It will be called perpetual, again and again,
         // depending on your machines possible frame rate.
         var _self = this;  // workaround for the Safari requestAnimationFrame bug.
-        this._render = function ( time ) { 
+        this._render = function( time ) { 
             // Pass the render function itself
             requestAnimationFrame(_self._render); 
             
@@ -222,19 +206,15 @@
         }; 
         // Call the rendering function. This will cause and infinite recursion (we want 
         // that here, because the animation shall run forever).
-        //this._render();
         requestAnimationFrame(_self._render);
 
+	
 	
 
 	// +-------------------------------------------------------------------------
 	// | Initialize dat.gui
 	// +-------------------------------------------------
-	var updateCrystal = function() {
-	    console.log( 'update ...' );
-
-	    
-	};
+	var updateCrystal = function() { console.log( 'update?' ); };
 	var gui = new dat.GUI();
 	function addBrickFolder(brick,name) {
 	    var folder = gui.addFolder(name);
@@ -254,9 +234,11 @@
 	addBrickFolder(settings.brickD,'Brick D');
 
 	gui.add( settings, 'showBricks' ).onChange( performCrystalCSG );
+	gui.add( settings, 'makeTwin' ).onChange( performCrystalCSG );
 	gui.add( settings, 'autoRotate' );
 	gui.add( settings, 'rebuild' );
 
+	
 
 	// +-------------------------------------------------------------------------
 	// | Clear all meshes from the scene (keep camera, lights, grid, axes helper, ...)
@@ -281,17 +263,34 @@
 	    console.log( 'currentRotation=' + currentRotation );
 	    // Use single color for all voxels or randomize?
 	    var material = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
-	    //var domEvents = new THREEx.DomEvents(this.camera, this.renderer.domElement);
 	    
-	    // Compute the crystal asynchronously
 	    var crystal = mkCrystal( material, settings );
+
+	    
+	    if( settings.makeTwin ) {
+		// Make a twin crystal.
+		//    See 'geometry flipping'
+		//    https://stackoverflow.com/questions/19625199/threejs-geometry-flipping
+		var twin = flipMesh(crystal);
+		applyMeshRotation( twin, Math.PI/8, Math.PI*(0/180), 0 );
+		twin.rotation.set( currentRotation.x, currentRotation.y, currentRotation.z );
+		applyMeshTranslation( twin, 0, 3, 0 );
+		applyMeshRotation( crystal, -Math.PI/8, Math.PI*(0/180), 0 ); 
+		applyMeshTranslation( crystal, 0, -3, 0 );
+		scene.add( twin );
+		meshes.push( twin );
+	    }
+	    
+	    
+	    // Keep the current rotation
 	    crystal.rotation.set( currentRotation.x, currentRotation.y, currentRotation.z );
 	    scene.add( crystal );
 	    meshes.push( crystal );
 	    // Hide overlay
 	    document.getElementById('overlay').style.display = 'none';
 	};
-	// new THREE.TextureLoader().load( 'square-gradient.png',
+
+	// Compute the crystal asynchronously
 	window.setTimeout( performCrystalCSG, 100 );
 	
     } // END function init
