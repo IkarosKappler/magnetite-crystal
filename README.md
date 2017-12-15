@@ -22,6 +22,16 @@ The first four images show failures :)
 ![Magnetite Crystal Bricked Crystal Twin](magnetite-crystal-d-twins-bricked-2.png)
 
 
+This is the result after fixing some angles and adding a fourth brick (four
+intersected cuboids should build up an octahedron):
+![Magnetite Crystal Plain Crystal](magnetite-crystal-e-plain.png)
+
+![Magnetite Crystal Bricked Crystal with](magnetite-crystal-e-bricks.png)
+
+![Magnetite Crystal Twin Crystal](magnetite-crystal-e-twin.png)
+
+
+
 
 Many thanks to Kathie L. Thomas-Keprta for the magnetite crystal habit analysis:
    http://www.pnas.org/content/98/5/2164/F1.expansion.html
