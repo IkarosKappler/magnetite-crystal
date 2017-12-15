@@ -12,90 +12,7 @@
     
     // This function builds the crystal
     function mkCrystal( material, settings ) {
-
-	// +-------------------------------------------------------------------------
-	// | This is a helper function that uses a cube as base.
-	// +-------------------------------------------------
-	function _useCubeBase() {
-	    var meshBase = new THREE.Mesh( new THREE.OctahedronGeometry(36,0) );
-	    var bspBase = new ThreeBSP( meshBase );
-	    var meshCubeA = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36), new THREE.MeshPhongMaterial( { color : 0x0088ff, transparent : true, opacity : 0.5 } ) );
-	    var meshCubeB = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36), new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
-	    applyMeshRotation(meshBase,0,Math.PI/4,0);
-	    var bspCubeA = new ThreeBSP( meshCubeA );
-	    var bspCubeB = new ThreeBSP( meshCubeB );
-
-	    var mesh = new THREE.Mesh();
-	    
-	    var intersectionA = bspBase.intersect( bspCubeA );
-	    var meshIntersectionA = intersectionA.toMesh( material );
-	    meshIntersectionA.geometry.computeVertexNormals();
-
-	    var differenceA = bspCubeA.subtract( bspBase );
-	    var differenceB = bspBase.subtract( bspCubeA );
-	    var meshDifferenceA = differenceA.toMesh( new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
-	    meshDifferenceA.geometry.computeVertexNormals();
-	    var meshDifferenceB = differenceB.toMesh( new THREE.MeshPhongMaterial( { color : 0x0088ff, transparent : true, opacity : 0.5 } ) );
-	    meshDifferenceB.geometry.computeVertexNormals();
-
-	    mesh.add( meshIntersectionA );
-	    mesh.add( meshDifferenceA );
-	    mesh.add( meshDifferenceB );
-	    
-	    return mesh;
-	} // END _useCubeBase
-
-	
-	// +-------------------------------------------------------------------------
-	// | This is a helper function that uses bricks for intersection.
-	// +-------------------------------------------------
-	function _useBricks() {
-	    var DEG_TO_RAD = Math.PI*2;
-	    function makeBrickMesh( brickSettings, color ) {
-		var brick = new THREE.Mesh( new THREE.CubeGeometry(brickSettings.size.x,
-								   brickSettings.size.y,
-								   brickSettings.size.z),
-					    new THREE.MeshPhongMaterial( { color : color, transparent : true, opacity : 0.5 } ) );
-		return brick;
-	    }
-	    var meshBrickA = makeBrickMesh( settings.brickA, 0x0000ff );
-	    var meshBrickB = makeBrickMesh( settings.brickB, 0x0000ff );
-	    var meshBrickC = makeBrickMesh( settings.brickC, 0x0000ff );
-	    var meshBrickD = makeBrickMesh( settings.brickD, 0x0000ff );
-	    applyMeshRotation( meshBrickA, settings.brickA.rotation );
-	    applyMeshRotation( meshBrickB, settings.brickB.rotation );
-	    applyMeshRotation( meshBrickC, settings.brickC.rotation );
-	    applyMeshRotation( meshBrickD, settings.brickD.rotation );
-	    var bspBrickA = new ThreeBSP( meshBrickA );
-	    var bspBrickB = new ThreeBSP( meshBrickB );
-	    var bspBrickC = new ThreeBSP( meshBrickC );
-	    var bspBrickD = new ThreeBSP( meshBrickD );
-
-	    var mesh = new THREE.Mesh();
-
-	    function _applyIntersectWithDiff( bspBase, colorBase, bspSub, colorSub, callback ) {
-		var bspIntersection  = bspBase.intersect( bspSub );
-		var bspDiffBase      = bspBase.subtract( bspSub );
-		var bspDiffSub       = bspSub.subtract( bspBase );
-		var meshDiffBase     = bspDiffBase.toMesh( new THREE.MeshPhongMaterial( { color : colorBase,  transparent : true, opacity : 0.5 } ) );
-		var meshDiffSub      = bspDiffSub.toMesh( new THREE.MeshPhongMaterial( { color : colorSub,  transparent : true, opacity : 0.5 } ) );
-		callback( meshDiffBase, meshDiffSub );
-
-		return bspIntersection;
-	    }
-
-	    var bspIntersection = bspBrickA;
-	    bspIntersection = _applyIntersectWithDiff( bspIntersection, 0xff0000, bspBrickB, 0x0088ff,
-						       function( difA, difB ) { if( !settings.showBricks ) return; mesh.add(difA); mesh.add(difB); }
-						     );
-	    bspIntersection = _applyIntersectWithDiff( bspIntersection, 0xff0000, bspBrickC, 0x0088ff,
-						       function( difA, difB ) { if( !settings.showBricks ) return; mesh.add(difA); mesh.add(difB); }
-						     );
-	    mesh.add( bspIntersection.toMesh( new THREE.MeshPhongMaterial( { color : 0x00ff00 } ) ) );
-	    return mesh;
-	} // END _useCubeBase
-
-	return _useBricks();
+	return new CrystalBuilder('bricks',settings);
     } // END mkCrystal
 
 
@@ -108,15 +25,20 @@
         window.removeEventListener('load',init);
 
 	var settings = {
-	    brickA : { size : { x : 18, y : 36, z : 42 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 120, z : 0 } },
-	    brickB : { size : { x : 36, y : 18, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : -120, z : 0 } },
-	    brickC : { size : { x : 36, y : 36, z : 18 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 120, y : 0, z : 0 } },
-	    brickD : { size : { x : 18, y : 36, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : -120, y : 0, z : 0 } },
+	    base   : { size : { x : 36, y : 36, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 0, z : 0 }, color : 0x00ff00 },
+	    brickA : { size : { x : 14, y : 18, z : 48 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 0, z : 30 }, color : 0xffff00 },
+	    brickB : { size : { x : 14, y : 18, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 0, z : -30 }, color : 0xff0000 },
+	    brickC : { size : { x : 42, y : 24, z : 18 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 120, y : 0, z : 0 }, color : 0x0088ff },
+	    brickD : { size : { x : 14, y : 24, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : -120, y : 0, z : 0 }, color : 0x0000ff },
 	    showBricks : false,
 	    makeTwin : true,
 	    autoRotate : true,
 	    rebuild : function() { performCrystalCSG(); }
 	};
+	console.log( 'getParams=' + JSON.stringify(getParams) );
+	if( typeof getParams.autoRotate !== "undefined" ) settings.autoRotate = JSON.parse(getParams.autoRotate);
+	if( typeof getParams.makeTwin !== "undefined" )   settings.makeTwin   = JSON.parse(getParams.makeTwin);
+	if( typeof getParams.showBricks !== "undefined" ) settings.showBricks = JSON.parse(getParams.showBricks);
 
         // Create new scene
         this.scene = new THREE.Scene(); 

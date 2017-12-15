@@ -32,10 +32,10 @@ function applyMeshRotation(mesh,x,y,z) {
 // | meshe's vertices.
 // +-------------------------------------------------
 function applyMeshTranslation(mesh,x,y,z) {
-    /*if( typeof x.x != "undefined" ) {
+    if( typeof x.x != "undefined" ) {
 	applyMeshRotation(mesh, x.x, x.y, x.z);
 	return;
-    } */
+    } 
 
     for( i in mesh.geometry.vertices ) {
 	mesh.geometry.vertices[i].x += x;
