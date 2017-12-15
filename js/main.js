@@ -199,6 +199,7 @@
 		applyMeshTranslation( twin, 0, 3, 0 );
 		applyMeshRotation( crystal, -Math.PI/8, Math.PI*(0/180), 0 ); 
 		applyMeshTranslation( crystal, 0, -3, 0 );
+		twin.scale.set(0.75,0.75,0.75);
 		scene.add( twin );
 		meshes.push( twin );
 	    }
