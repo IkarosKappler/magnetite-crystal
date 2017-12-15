@@ -42,4 +42,5 @@ Find a live demo here: http://www.int2byte.de/public/magnetite-crystal
 
 To-Do
 -----
-* Make the translation configurable (values are not applied at the moment).
+* Add presets.
+* Build a simple octahedron :)
