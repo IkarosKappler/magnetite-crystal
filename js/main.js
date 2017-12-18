@@ -26,10 +26,10 @@
 
 	var settings = {
 	    base   : { size : { x : 36, y : 36, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 0, z : 0 }, color : 0x00ff00 },
-	    brickA : { size : { x : 14, y : 18, z : 48 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 0, z : 30 }, color : 0xffff00 },
-	    brickB : { size : { x : 14, y : 18, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 0, z : -30 }, color : 0xff0000 },
-	    brickC : { size : { x : 42, y : 24, z : 18 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 120, y : 0, z : 0 }, color : 0x0088ff },
-	    brickD : { size : { x : 14, y : 24, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : -120, y : 0, z : 0 }, color : 0x0000ff },
+	    brickA : { size : { x : 32, y : 12, z : 48 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 0, z : 55 }, color : 0xffff00 },
+	    brickB : { size : { x : 32, y : 12, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 0, z : -55 }, color : 0xff0000 },
+	    brickC : { size : { x : 42, y : 24, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 120, y : 0, z : 0 }, color : 0x0088ff },
+	    brickD : { size : { x : 16, y : 38, z : 16 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 140, y : 0, z : 0 }, color : 0x0000ff },
 	    showBricks : false,
 	    makeTwin : true,
 	    autoRotate : true,
@@ -194,11 +194,12 @@
 		//    See 'geometry flipping'
 		//    https://stackoverflow.com/questions/19625199/threejs-geometry-flipping
 		var twin = flipMesh(crystal);
-		applyMeshRotation( twin, Math.PI/8, Math.PI*(0/180), 0 );
-		twin.rotation.set( currentRotation.x, currentRotation.y, currentRotation.z );
-		applyMeshTranslation( twin, 0, 3, 0 );
-		applyMeshRotation( crystal, -Math.PI/8, Math.PI*(0/180), 0 ); 
-		applyMeshTranslation( crystal, 0, -3, 0 );
+		applyMeshRotation( twin, Math.PI*(-60/180), Math.PI*(0/180), Math.PI*(180/180) );
+		//twin.rotation.set( currentRotation.x, currentRotation.y, currentRotation.z );
+		applyMeshTranslation( twin, 0, 12, 1 );
+		//applyMeshRotation( crystal, -Math.PI/8, Math.PI*(0/180), 0 ); 
+		//applyMeshTranslation( crystal, 0, -3, 0 );
+		//crystal.position.y -= 2.0;
 		twin.scale.set(0.75,0.75,0.75);
 		scene.add( twin );
 		meshes.push( twin );
