@@ -24,17 +24,13 @@
     function init() {
         window.removeEventListener('load',init);
 
-	var settings = {
-	    base   : { size : { x : 36, y : 36, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 0, z : 0 }, color : 0x00ff00 },
-	    brickA : { size : { x : 32, y : 12, z : 48 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 0, z : 55 }, color : 0xffff00 },
-	    brickB : { size : { x : 32, y : 12, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 0, y : 0, z : -55 }, color : 0xff0000 },
-	    brickC : { size : { x : 42, y : 24, z : 36 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 120, y : 0, z : 0 }, color : 0x0088ff },
-	    brickD : { size : { x : 16, y : 38, z : 16 }, translation : { x : 0, y : 0, z : 0 }, rotation : { x : 140, y : 0, z : 0 }, color : 0x0000ff },
-	    showBricks : false,
-	    makeTwin : true,
-	    autoRotate : true,
-	    rebuild : function() { performCrystalCSG(); }
-	};
+	var settings = presets.default;
+	Object.assign( settings,
+		       { showBricks : false,
+			 makeTwin : true,
+			 autoRotate : true,
+			 rebuild : function() { performCrystalCSG(); }
+		       } );
 	console.log( 'getParams=' + JSON.stringify(getParams) );
 	if( typeof getParams.autoRotate !== "undefined" ) settings.autoRotate = JSON.parse(getParams.autoRotate);
 	if( typeof getParams.makeTwin !== "undefined" )   settings.makeTwin   = JSON.parse(getParams.makeTwin);
@@ -138,6 +134,7 @@
 	// +-------------------------------------------------
 	var updateCrystal = function() { console.log( 'update?' ); };
 	var gui = new dat.GUI();
+	gui.add( presets, 'default', [ Object.keys(presets) ] ).onChange( function(e) { console.log(e); } );
 	function addBrickFolder(brick,name) {
 	    var folder = gui.addFolder(name);
 	    function addSubFolder( triple, name, min, max ) {
