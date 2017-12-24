@@ -33,7 +33,7 @@ function applyMeshRotation(mesh,x,y,z) {
 // +-------------------------------------------------
 function applyMeshTranslation(mesh,x,y,z) {
     if( typeof x.x != "undefined" ) {
-	applyMeshRotation(mesh, x.x, x.y, x.z);
+	applyMeshTranslation(mesh, x.x, x.y, x.z);
 	return;
     } 
 

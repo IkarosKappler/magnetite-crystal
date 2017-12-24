@@ -39,7 +39,7 @@ function flipMesh( mesh ) {
     
     // Set -1 to the corresponding axis
     mS.elements[0] = -1;
-    //mS.elements[5] = -1;
+    mS.elements[5] = -1;
     mS.elements[10] = -1;
     for( var i in mesh.children ) {
 	// twin.children[i].geometry.clone().applyMatrix(mS);

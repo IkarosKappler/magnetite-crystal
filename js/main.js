@@ -191,13 +191,12 @@
 		//    See 'geometry flipping'
 		//    https://stackoverflow.com/questions/19625199/threejs-geometry-flipping
 		var twin = flipMesh(crystal);
-		applyMeshRotation( twin, Math.PI*(-60/180), Math.PI*(0/180), Math.PI*(180/180) );
-		//twin.rotation.set( currentRotation.x, currentRotation.y, currentRotation.z );
-		applyMeshTranslation( twin, 0, 12, 1 );
-		//applyMeshRotation( crystal, -Math.PI/8, Math.PI*(0/180), 0 ); 
-		//applyMeshTranslation( crystal, 0, -3, 0 );
-		//crystal.position.y -= 2.0;
-		twin.scale.set(0.75,0.75,0.75);
+		applyMeshRotation( twin, deg2rad(settings.twin.rotation) );
+		applyMeshTranslation( twin, settings.twin.offset );
+		twin.scale.set( settings.twin.scale.x, settings.twin.scale.y, settings.twin.scale.z );
+		// Keep the current rotation
+		twin.rotation.set( currentRotation.x, currentRotation.y, currentRotation.z );
+		
 		scene.add( twin );
 		meshes.push( twin );
 	    }

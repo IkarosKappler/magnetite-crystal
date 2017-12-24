@@ -8,14 +8,6 @@
  **/
 
 var CrystalBuilder = function() {
-
-    // +-------------------------------------------------------------------------
-    // | A helper function to convert degrees to radians.
-    // +-------------------------------------------------
-    function deg2rad( rotation ) {
-	var DEG_TO_RAD = Math.PI/180.0;
-	return { x : rotation.x*DEG_TO_RAD, y : rotation.y*DEG_TO_RAD, z : rotation.z*DEG_TO_RAD };
-    }
     
     // +-------------------------------------------------------------------------
     // | This is a helper function that uses a cube as base.
