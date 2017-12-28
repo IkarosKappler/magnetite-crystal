@@ -12,7 +12,7 @@
     
     // This function builds the crystal
     function mkCrystal( material, settings ) {
-	return new CrystalBuilder('bricks',settings);
+	return new CrystalBuilder(settings.type,settings,material);
     } // END mkCrystal
 
 
@@ -28,13 +28,15 @@
 	Object.assign( settings,
 		       { showBricks : false,
 			 makeTwin : true,
+			 makeTwinClone : false,
 			 autoRotate : true,
-			 rebuild : function() { performCrystalCSG(); }
+			 rebuild : function() { performCrystalCSG(settings, true); }
 		       } );
 	console.log( 'getParams=' + JSON.stringify(getParams) );
-	if( typeof getParams.autoRotate !== "undefined" ) settings.autoRotate = JSON.parse(getParams.autoRotate);
-	if( typeof getParams.makeTwin !== "undefined" )   settings.makeTwin   = JSON.parse(getParams.makeTwin);
-	if( typeof getParams.showBricks !== "undefined" ) settings.showBricks = JSON.parse(getParams.showBricks);
+	if( typeof getParams.autoRotate !== "undefined" )    settings.autoRotate = JSON.parse(getParams.autoRotate);
+	if( typeof getParams.makeTwin !== "undefined" )      settings.makeTwin   = JSON.parse(getParams.makeTwin);
+	if( typeof getParams.makeTwinClone !== "undefined" ) settings.makeTwin   = JSON.parse(getParams.makeTwinClone);
+	if( typeof getParams.showBricks !== "undefined" )    settings.showBricks = JSON.parse(getParams.showBricks);
 
         // Create new scene
         this.scene = new THREE.Scene(); 
@@ -152,8 +154,9 @@
 	addBrickFolder(settings.brickC,'Brick C');
 	addBrickFolder(settings.brickD,'Brick D');
 
-	gui.add( settings, 'showBricks' ).onChange( performCrystalCSG );
-	gui.add( settings, 'makeTwin' ).onChange( performCrystalCSG );
+	gui.add( settings, 'showBricks' ).onChange( function() { performCrystalCSG(settings,true); } );
+	gui.add( settings, 'makeTwin' ).onChange( function() { performCrystalCSG(settings,true); } );
+	gui.add( settings, 'makeTwinClone' ).onChange( function() { performCrystalCSG(settings,true); } );
 	gui.add( settings, 'autoRotate' );
 	gui.add( settings, 'rebuild' );
 
@@ -177,28 +180,43 @@
 	// +-------------------------------------------------------------------------
 	// | Perform the actual CSG.
 	// +-------------------------------------------------
-	function performCrystalCSG() {
+	function performCrystalCSG( brickSettings, clearScene, color ) {
+	    if( typeof color == "undefined" || color == null )
+		color = 0x00ff00;
 	    var currentRotation = removeMeshes();
 	    console.log( 'currentRotation=' + currentRotation );
 	    // Use single color for all voxels or randomize?
-	    var material = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
+	    var material = new THREE.MeshPhongMaterial( { color: color } ); // 0x00ff00 } );
 	    
-	    var crystal = mkCrystal( material, settings );
-
+	    var crystal = mkCrystal( material, brickSettings );
 	    
-	    if( settings.makeTwin ) {
+	    if( brickSettings.makeTwin ) {
 		// Make a twin crystal.
-		//    See 'geometry flipping'
-		//    https://stackoverflow.com/questions/19625199/threejs-geometry-flipping
-		var twin = flipMesh(crystal);
-		applyMeshRotation( twin, deg2rad(settings.twin.rotation) );
-		applyMeshTranslation( twin, settings.twin.offset );
-		twin.scale.set( settings.twin.scale.x, settings.twin.scale.y, settings.twin.scale.z );
-		// Keep the current rotation
-		twin.rotation.set( currentRotation.x, currentRotation.y, currentRotation.z );
+		if( brickSettings.makeTwinClone ) {
+		    //    See 'geometry flipping'
+		    //    https://stackoverflow.com/questions/19625199/threejs-geometry-flipping
+		    var twin = flipMesh(crystal);
+		    applyMeshRotation( twin, deg2rad(brickSettings.twin.rotation) );
+		    applyMeshTranslation( twin, brickSettings.twin.offset );
+		    twin.scale.set( brickSettings.twin.scale.x, brickSettings.twin.scale.y, brickSettings.twin.scale.z );
+		    // Keep the current rotation
+		    twin.rotation.set( currentRotation.x, currentRotation.y, currentRotation.z );
 		
-		scene.add( twin );
-		meshes.push( twin );
+		    scene.add( twin );
+		    meshes.push( twin );
+		} else {
+		    var twinSettings = presets.twinA;
+		    Object.assign( twinSettings,
+				   { showBricks : settings.showBricks,
+				     makeTwin : false,
+				     makeTwinClone : false,
+				     autoRotate : settings.autoRotate
+				   } );
+		    var twin = performCrystalCSG( twinSettings, false, 0xffffff );
+		    applyMeshRotation( twin, deg2rad({x:0,y:45,z:0}) );
+		    applyMeshTranslation( twin, { x : 4, y : 4, z : 4 } );
+		    twin.scale.set(1,0.9,1);
+		}
 	    }
 	    
 	    
@@ -208,10 +226,12 @@
 	    meshes.push( crystal );
 	    // Hide overlay
 	    document.getElementById('overlay').style.display = 'none';
+
+	    return crystal;
 	};
 
 	// Compute the crystal asynchronously
-	window.setTimeout( performCrystalCSG, 100 );
+	window.setTimeout( function() { performCrystalCSG(settings,true); }, 100 );
 	
     } // END function init
 

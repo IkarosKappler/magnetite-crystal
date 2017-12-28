@@ -12,9 +12,9 @@ var CrystalBuilder = function() {
     // +-------------------------------------------------------------------------
     // | This is a helper function that uses a cube as base.
     // +-------------------------------------------------
-    function useOctahedron() {
-	var meshBase = new THREE.Mesh( new THREE.OctahedronGeometry(36,0) );
-	var bspBase = new ThreeBSP( meshBase );
+    function useOctahedron( material ) {
+	var meshBase = new THREE.Mesh( new THREE.OctahedronGeometry(6,0), material );
+	/*var bspBase = new ThreeBSP( meshBase );
 	var meshCubeA = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36), new THREE.MeshPhongMaterial( { color : 0x0088ff, transparent : true, opacity : 0.5 } ) );
 	var meshCubeB = new THREE.Mesh( new THREE.CubeGeometry(36, 36, 36), new THREE.MeshPhongMaterial( { color : 0xff0000, transparent : true, opacity : 0.5 } ) );
 	applyMeshRotation(meshBase,0,Math.PI/4,0);
@@ -35,8 +35,11 @@ var CrystalBuilder = function() {
 	meshDifferenceB.geometry.computeVertexNormals();
 
 	mesh.add( meshIntersectionA );
+	
 	mesh.add( meshDifferenceA );
 	mesh.add( meshDifferenceB );
+	*/
+	var mesh = meshBase;
 	
 	return mesh;
     } // END useOctahedron
@@ -113,9 +116,9 @@ var CrystalBuilder = function() {
     } // END useBricks
 
     
-    return function( type, settings ) {
+    return function( type, settings, material ) {
 	switch( type ) {
-	case 'octahedron' : return useOctahedron(); break;
+	case 'octahedron' : return useOctahedron(material); break;
 	case 'bricks': return useBricks( settings ); break;
 	default: throw "Unrecognized crystal construction type: " + type + ".";
 	}
