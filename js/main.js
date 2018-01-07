@@ -213,9 +213,11 @@
 				     autoRotate : settings.autoRotate
 				   } );
 		    var twin = performCrystalCSG( twinSettings, false, 0xffffff );
-		    applyMeshRotation( twin, deg2rad({x:0,y:45,z:0}) );
-		    applyMeshTranslation( twin, { x : 4, y : 4, z : 4 } );
-		    twin.scale.set(1,0.9,1);
+		    applyMeshRotation( twin, deg2rad({x:25,y:35,z:0}) );
+		    applyMeshTranslation( twin, { x : 1.2, y : 0.8, z : 4 } );
+		    twin.scale.set(1.6,1.2,1.4);
+		    // Keep the current rotation
+		    twin.rotation.set( currentRotation.x, currentRotation.y, currentRotation.z );
 		}
 	    }
 	    
